@@ -30,6 +30,8 @@ FROM dunglas/frankenphp:1-php8.5-bookworm AS application
 
 WORKDIR /app
 
+RUN setcap -r /usr/local/bin/frankenphp
+
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && install-php-extensions \
         pdo_pgsql \
