@@ -1,0 +1,3 @@
+name: greencycle
+php: '8.5'
+secured: false

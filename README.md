@@ -8,6 +8,7 @@
 **GreenCycle** is a gamified web application where users manage a personal virtual greenhouse and a collection of digital trees.
 
 Users can plant and view their own trees while the system progressively incorporates growth, health, time-based mechanics, harvesting, virtual currency, inventory, and a virtual shop.
+
 ---
 
 <p align="center">
@@ -19,9 +20,9 @@ Users can plant and view their own trees while the system progressively incorpor
 
 ## 🌱 Current Scope — Sprint 1
 
-During Sprint 1, GreenCycle focuses on the initial structure of the application.
+During Sprint 1, GreenCycle focuses on establishing the initial functional and architectural structure of the application.
 
-The application is expected to support:
+The Sprint 1 implementation is currently being developed to support:
 
 - User registration, login, and logout.
 - Access to protected resources.
@@ -49,16 +50,17 @@ The application is expected to support:
 | **Testing** | PHPUnit · SQLite in memory |
 | **Local Environment** | Laravel Herd |
 | **Version Control** | Git · GitHub |
-| **Code Quality** | Laravel Pint · GitHub Actions |
-| **Deployment** | Render |
+| **Code Quality** | Laravel Pint |
+| **Planned CI** | GitHub Actions |
+| **Planned Deployment** | Render |
 
-> Docker and a local PostgreSQL installation are not required.
+> Docker and a local PostgreSQL installation are not required for local development.
 
 ---
 
 ## 📁 Project Structure
 
-- `backend/`: Laravel application, backend source code, migrations, seeders, and automated tests.
+- `backend/`: Laravel application, backend source code, migrations, seeders, frontend resources, and automated tests.
 
 - `design/`: graphic resources and interface prototypes.
 
@@ -82,7 +84,7 @@ All tree endpoints require authentication and must prevent users from accessing 
 
 Internal values such as level, health, progress, state, and dates are controlled by the server and must not be defined by the client.
 
-Detailed API documentation and related resources are stored in:
+Detailed API documentation and related resources are maintained in:
 
 ```text
 docs/
@@ -113,7 +115,7 @@ The development team remains responsible for the implementation, testing, projec
 
 **Sprint 1 — In Development**
 
-The current focus is the initial data model, authentication and authorization, tree API, base interface, documentation, and reproducible development environment.
+The current focus is the initial data model, authentication and authorization, tree API, base interface, documentation, database configuration, and reproducible development environment.
 
 ---
 
@@ -170,7 +172,7 @@ The following sections explain how to obtain, configure, run, and verify GreenCy
 
 ## 1. Clone the Repository
 
-Open PowerShell and run:
+Open PowerShell or the integrated Visual Studio Code terminal and run:
 
 ```powershell
 git clone REPOSITORY_URL
@@ -189,7 +191,7 @@ From the GreenCycle repository root, navigate to the Laravel application:
 Set-Location backend/greencycle
 ```
 
-At this point, the terminal should be located inside:
+The terminal should now be located inside:
 
 ```text
 GreenCycle/backend/greencycle/
@@ -242,11 +244,23 @@ http://greencycle.test
 
 ## 4. Select the Node.js Version
 
-Use the Node.js version configured for the project:
+GreenCycle uses Node.js 26.
+
+The project includes a `.nvmrc` file containing the required Node.js version.
+
+Run:
 
 ```powershell
-nvm use
+nvm use 26
 ```
+
+Verify the active version:
+
+```powershell
+node -v
+```
+
+The version should correspond to Node.js 26.
 
 ---
 
@@ -261,8 +275,10 @@ composer install
 Install frontend dependencies:
 
 ```powershell
-npm ci
+npm.cmd ci
 ```
+
+> If PowerShell blocks `npm.ps1` because of the execution policy, use `npm.cmd` instead of `npm`.
 
 ---
 
@@ -352,7 +368,7 @@ If the connection is working correctly, Laravel will display the current migrati
 
 ## 10. Run Migrations and Seeders
 
-Recreate the development database structure and load the initial data:
+Recreate the development database structure and load the initial project data:
 
 ```powershell
 php artisan migrate:fresh --seed
@@ -371,7 +387,7 @@ This command runs the project migrations and seeders against the configured Neon
 From `backend/greencycle/`, run:
 
 ```powershell
-npm run dev
+npm.cmd run dev
 ```
 
 Keep this terminal open while developing GreenCycle.
@@ -412,11 +428,15 @@ backend/greencycle/
 
 ### Database and Migration Status
 
+Verify that Laravel can connect to the configured database and review the current migration status:
+
 ```powershell
 php artisan migrate:status
 ```
 
 ### Automated Tests
+
+Run the Laravel automated test suite:
 
 ```powershell
 php artisan test
@@ -430,19 +450,42 @@ Check PHP formatting with Laravel Pint:
 .\vendor\bin\pint --test
 ```
 
-To automatically correct formatting:
+To automatically correct formatting issues:
 
 ```powershell
 .\vendor\bin\pint
 ```
 
-### Frontend Build
+### Frontend Dependencies
 
-Verify that the frontend assets compile correctly:
+Install the frontend dependencies using the versions defined in `package-lock.json`:
 
 ```powershell
-npm run build
+npm.cmd ci
 ```
+
+> If PowerShell blocks `npm.ps1` because of the execution policy, use `npm.cmd` instead of `npm`.
+
+### Frontend Build
+
+Verify that the frontend assets compile correctly for production:
+
+```powershell
+npm.cmd run build
+```
+
+### Project Verification
+
+The local development environment has been verified using:
+
+- `composer install`
+- `npm.cmd ci`
+- `npm.cmd run build`
+- `php artisan test`
+- `.\vendor\bin\pint --test`
+- `php artisan migrate:status`
+
+The current automated test suite passes successfully, Laravel Pint reports no formatting errors, the Neon `development` database connection is working correctly, and the frontend production build completes without errors.
 
 ---
 
