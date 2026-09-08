@@ -8,6 +8,12 @@
 **GreenCycle** is a gamified web application where users manage a personal virtual greenhouse and a collection of digital trees.
 
 Users can plant and view their own trees while the system progressively incorporates growth, health, time-based mechanics, harvesting, virtual currency, inventory, and a virtual shop.
+---
+
+<p align="center">
+  <!-- Graphic identifier used as a visual transition -->
+  <img src="design/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+</p>
 
 ---
 
@@ -52,13 +58,13 @@ The application is expected to support:
 
 ## 📁 Project Structure
 
-- `backend/`: backend development with Laravel.
+- `backend/`: Laravel application, backend source code, migrations, seeders, and automated tests.
 
 - `design/`: graphic resources and interface prototypes.
 
-- `docs/`: project documentation, diagrams, API documentation, Sprint evidence, and development records.
+- `docs/`: project documentation, API documentation, Sprint evidence, and development records.
 
-- `tests/`: system testing resources and verification files.
+- `verification/`: project-level verification resources, manual checks, and testing evidence.
 
 ---
 
@@ -135,19 +141,28 @@ The final verified version of each Sprint will be merged into `main` and identif
 
 Detailed Sprint documentation and development records are maintained in the `docs/` directory.
 
-Relevant commits, technical decisions, evidence, and other Sprint-related documentation can be found in:
+Relevant commits and development progress can be found in:
 
 ```text
-docs/commits/
+docs/Commits.md
 ```
 
 The complete Git history remains available directly in the GitHub repository.
 
 ---
 
+<p align="center">
+  <!-- Graphic identifier used as a visual transition -->
+  <img src="design/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+</p>
+
+---
+
 # Getting Started
 
 The following sections explain how to obtain, configure, run, and verify GreenCycle in a local development environment.
+
+> **Important:** Git commands are executed from the root `GreenCycle/` directory. Laravel, Composer, npm, Artisan, and Herd commands must be executed from `backend/greencycle/`, where the `artisan`, `composer.json`, and `package.json` files are located.
 
 ---
 
@@ -158,31 +173,44 @@ The following sections explain how to obtain, configure, run, and verify GreenCy
 Open PowerShell and run:
 
 ```powershell
-git clone URL_OF_THE_REPOSITORY
-Set-Location greencycle
+git clone REPOSITORY_URL
+Set-Location GreenCycle
 ```
 
-Replace `URL_OF_THE_REPOSITORY` with the actual GreenCycle GitHub repository URL.
+Replace `REPOSITORY_URL` with the actual GreenCycle GitHub repository URL.
 
 ---
 
 ## 2. Open the Laravel Project
 
-Navigate to the Laravel application located inside the `backend/` directory:
+From the GreenCycle repository root, navigate to the Laravel application:
 
 ```powershell
 Set-Location backend/greencycle
 ```
 
-All Composer, Artisan, Herd, and npm commands must be executed from the directory that contains the `artisan` file.
+At this point, the terminal should be located inside:
+
+```text
+GreenCycle/backend/greencycle/
+```
+
+This directory contains the Laravel application files, including:
+
+```text
+artisan
+composer.json
+package.json
+.env.example
+```
+
+> All Laravel, Composer, npm, Artisan, and Herd commands in the following steps must be executed from this directory.
 
 ---
 
 ## 3. Configure Laravel Herd
 
-GreenCycle uses **Laravel Herd through a project link** rather than depending on Herd's default parked directory.
-
-Make sure you are inside the Laravel application directory before running the following commands.
+GreenCycle uses Laravel Herd through a project link rather than depending on Herd's default parked directory.
 
 Initialize Herd:
 
@@ -196,19 +224,19 @@ Use PHP 8.5 for GreenCycle:
 herd isolate 8.5
 ```
 
-Link the Laravel application using the GreenCycle site name:
+Register the Laravel application with Herd:
 
 ```powershell
 herd link greencycle
 ```
 
-After linking the application, GreenCycle will be available locally at:
+GreenCycle will then be available locally at:
 
 ```text
 http://greencycle.test
 ```
 
-> GreenCycle uses `herd link greencycle` to register the Laravel application directly with Herd. The project does not need to be located inside Herd's default parked directory.
+> The project can remain inside the GreenCycle monorepo because `herd link greencycle` registers the Laravel application directly with Herd.
 
 ---
 
@@ -224,13 +252,13 @@ nvm use
 
 ## 5. Install Dependencies
 
-Install the PHP dependencies:
+Install PHP dependencies:
 
 ```powershell
 composer install
 ```
 
-Install the frontend dependencies:
+Install frontend dependencies:
 
 ```powershell
 npm ci
@@ -240,15 +268,17 @@ npm ci
 
 ## 6. Create the Environment File
 
-Copy the example environment file:
+The environment configuration files are located inside:
+
+```text
+backend/greencycle/
+```
+
+Create the local `.env` file from `.env.example`:
 
 ```powershell
 Copy-Item .env.example .env
 ```
-
-The `.env` file contains the local environment configuration required by Laravel.
-
-> The `.env` file must never be committed to the repository.
 
 Generate the Laravel application key:
 
@@ -256,7 +286,9 @@ Generate the Laravel application key:
 php artisan key:generate
 ```
 
-The generated `APP_KEY` is stored automatically in the local `.env` file.
+The generated `APP_KEY` is automatically stored in the local `.env` file.
+
+> The `.env` file contains local configuration and private credentials and must never be committed to GitHub.
 
 ---
 
@@ -264,49 +296,79 @@ The generated `APP_KEY` is stored automatically in the local `.env` file.
 
 ## 7. Configure the Development Database
 
-Open the `.env` file and configure the connection to the Neon `development` database.
+GreenCycle uses PostgreSQL hosted on Neon.
+
+The project separates its database environments using Neon branches:
+
+| Environment | Database |
+|---|---|
+| **Development** | Neon `development` branch |
+| **Production** | Neon `production` branch |
+| **Automated Testing** | SQLite in memory |
+
+Local development must use the Neon `development` branch.
+
+Open the local `.env` file and configure the PostgreSQL credentials provided by Neon:
 
 ```env
 DB_CONNECTION=pgsql
-DB_HOST=
+DB_HOST=NEON_HOST
 DB_PORT=5432
 DB_DATABASE=neondb
-DB_USERNAME=
-DB_PASSWORD=
+DB_USERNAME=NEON_USERNAME
+DB_PASSWORD=NEON_PASSWORD
 DB_SSLMODE=require
 ```
 
-> Real database credentials and connection strings must never be committed to the repository.
+Replace `NEON_HOST`, `NEON_USERNAME`, and `NEON_PASSWORD` with the credentials provided by Neon for the `development` branch.
+
+> Never include real Neon credentials, passwords, or connection information in the repository.
+
+The public `.env.example` file documents the required variables without including real secrets.
 
 ---
 
 ## 8. Clear Cached Configuration
 
-After configuring the environment variables, run:
+After modifying the `.env` file, clear Laravel's cached configuration:
 
 ```powershell
-php artisan optimize:clear
+php artisan config:clear
 ```
 
 ---
 
-## 9. Run Migrations and Seeders
+## 9. Verify the Database Connection
 
-Create the database structure and load the initial project data:
+Verify that Laravel can communicate with the configured Neon database:
+
+```powershell
+php artisan migrate:status
+```
+
+If the connection is working correctly, Laravel will display the current migration status.
+
+---
+
+## 10. Run Migrations and Seeders
+
+Recreate the development database structure and load the initial data:
 
 ```powershell
 php artisan migrate:fresh --seed
 ```
 
-This command runs the project migrations and seeders required to reproduce the development database structure and initial data.
+This command runs the project migrations and seeders against the configured Neon `development` branch.
+
+> `migrate:fresh` removes the existing tables before recreating them. It should only be used against the development environment when rebuilding the database is intended.
 
 ---
 
 # ▶ Execution
 
-## 10. Start Vite
+## 11. Start Vite
 
-Run:
+From `backend/greencycle/`, run:
 
 ```powershell
 npm run dev
@@ -316,7 +378,7 @@ Keep this terminal open while developing GreenCycle.
 
 ---
 
-## 11. Open GreenCycle
+## 12. Open GreenCycle
 
 Because the Laravel application was registered using:
 
@@ -342,7 +404,17 @@ php artisan serve
 
 ## Testing and Verification
 
-After installing and configuring GreenCycle, verify the project from the Laravel application directory.
+After installing and configuring GreenCycle, run the following commands from:
+
+```text
+backend/greencycle/
+```
+
+### Database and Migration Status
+
+```powershell
+php artisan migrate:status
+```
 
 ### Automated Tests
 
@@ -358,7 +430,7 @@ Check PHP formatting with Laravel Pint:
 .\vendor\bin\pint --test
 ```
 
-To automatically fix formatting:
+To automatically correct formatting:
 
 ```powershell
 .\vendor\bin\pint
@@ -379,7 +451,8 @@ npm run build
 The following information must never be committed or published:
 
 - `.env`
-- Real database credentials or connection strings
+- Real Neon database credentials
+- Database connection strings
 - `APP_KEY`
 - GitHub tokens
 - Passwords
@@ -388,11 +461,13 @@ The following information must never be committed or published:
 
 Only `.env.example` should be included in the repository to document the environment variables required by the project.
 
-Before committing changes:
+Before committing changes, verify the repository status:
 
 ```powershell
 git status
 ```
+
+The local `.env` file should not appear among the files to be committed.
 
 ---
 
@@ -400,14 +475,15 @@ git status
 
 Demo credentials will only be included if they are required and allowed for the Sprint delivery.
 
-Personal accounts or personal credentials must never be used.
+Personal accounts and personal credentials must never be used as demo credentials.
 
-If demo credentials are required, they will be added to this section before the final delivery.
+If demo credentials are required, they will be added to this section before the final Sprint 1 delivery.
 
 ---
 
 <p align="center">
- <img src="design/gc_divider.png" alt="GreenCycle divider" width="800">
+  <!-- Graphic identifier used to close the README -->
+  <img src="design/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
 </p>
 
 <p align="center">
@@ -415,6 +491,5 @@ If demo credentials are required, they will be added to this section before the 
 </p>
 
 <p align="center">
-  <!-- Graphic identifier for web in this case is use to close the read me-->
-  <img src="design/gcycle_color.png" alt="GreenCycle LogoColor" width="300">
+  <img src="design/gc_divider.png" alt="GreenCycle divider" width="800">
 </p>
