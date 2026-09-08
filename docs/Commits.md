@@ -19,7 +19,9 @@ This document records the most relevant commits made during the development of t
 |------|------|----------------|--------|
 | 07/09/2026 | 322792d | Initial monorepo project structure (backend, design, docs, and tests) | N1sse |
 | 07/09/2026 | 0594910 | Adding `.gitkeep` to preserve folder structure | N1sse |
-| 08/09/2026 | `72f30a4` | chore: configure Neon and update project structure | N1sse 
+| 08/09/2026 | `72f30a4` | chore: configure Neon and update project structure | N1sse |
+| 08/09/2026 | `e4dda66` | docs: update Sprint 1 commit history and data in README | N1sse |
+| 08/09/2026 | `31accd9` | chore: add deployment and environment configuration | N1sse |
 
 
 ---

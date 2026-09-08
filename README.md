@@ -154,8 +154,7 @@ The complete Git history remains available directly in the GitHub repository.
 ---
 
 <p align="center">
-  <!-- Graphic identifier used as a visual transition -->
-  <img src="design/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+  <img src="design/gc_divider.png" alt="GreenCycle divider" width="800">
 </p>
 
 ---
@@ -531,8 +530,4 @@ If demo credentials are required, they will be added to this section before the 
 
 <p align="center">
   <strong>Plant. Care. Grow.</strong>
-</p>
-
-<p align="center">
-  <img src="design/gc_divider.png" alt="GreenCycle divider" width="800">
 </p>
