@@ -52,7 +52,7 @@ The Sprint 1 implementation is currently being developed to support:
 | **Version Control** | Git · GitHub |
 | **Code Quality** | Laravel Pint |
 | **Planned CI** | GitHub Actions |
-| **Planned Deployment** | Render |
+| **Deployment** | Render |
 
 > Docker and a local PostgreSQL installation are not required for local development.
 
