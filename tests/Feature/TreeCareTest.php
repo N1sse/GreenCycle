@@ -216,4 +216,44 @@ public function test_tree_can_be_cared_for_exactly_at_next_care_time(): void
     $this->assertEquals(90, $tree->health);
     $this->assertEquals(1, $tree->progress);
 }
+
+
+// 11. Impedir que el cliente manipule los valores internos del árbol.
+public function test_client_cannot_manipulate_internal_tree_fields_when_caring(): void
+{
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $tree = Tree::factory()->create([
+        'user_id' => $user->id,
+        'level' => 2,
+        'progress' => 1,
+        'health' => 70,
+        'status' => 'ACTIVE',
+    ]);
+
+    $this->actingAs($user, 'sanctum')
+        ->postJson("/api/trees/{$tree->id}/care", [
+            'user_id' => $otherUser->id,
+            'level' => 99,
+            'progress' => 99,
+            'health' => 1,
+            'status' => 'DEAD',
+        ])
+        ->assertStatus(200)
+        ->assertJsonPath('tree.user_id', $user->id)
+        ->assertJsonPath('tree.level', 2)
+        ->assertJsonPath('tree.progress', 2)
+        ->assertJsonPath('tree.health', 90)
+        ->assertJsonPath('tree.status', 'ACTIVE');
+
+    $tree->refresh();
+
+    $this->assertEquals($user->id, $tree->user_id);
+    $this->assertEquals(2, $tree->level);
+    $this->assertEquals(2, $tree->progress);
+    $this->assertEquals(90, $tree->health);
+    $this->assertEquals('ACTIVE', $tree->status);
+}
+
 }
