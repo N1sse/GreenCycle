@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Tree;
 use App\Models\User;
+use App\Models\SeedType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,7 @@ class TreeFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'seed_type_id' => 1,
+            'seed_type_id' => SeedType::factory(),
             'level' => 0,
             'progress' => 0,
             'status' => 'ACTIVE',
