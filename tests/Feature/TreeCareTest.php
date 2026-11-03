@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Tree;
-use App\Models\SeedType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -140,120 +139,118 @@ class TreeCareTest extends TestCase
     }
 
     public function test_guest_cannot_care_for_a_tree(): void
-{
-    $tree = Tree::factory()->create();
+    {
+        $tree = Tree::factory()->create();
 
-    $this->postJson("/api/trees/{$tree->id}/care")
-        ->assertStatus(401);
-}
+        $this->postJson("/api/trees/{$tree->id}/care")
+            ->assertStatus(401);
+    }
 
-//árbol no existe
-public function test_cannot_care_for_a_nonexistent_tree(): void
-{
-    $user = User::factory()->create();
+    // árbol no existe
+    public function test_cannot_care_for_a_nonexistent_tree(): void
+    {
+        $user = User::factory()->create();
 
-    $this->actingAs($user, 'sanctum')
-        ->postJson('/api/trees/99999/care')
-        ->assertStatus(404);
-}
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/trees/99999/care')
+            ->assertStatus(404);
+    }
 
-//árboles que ya no pueden recibir cuidados
-public function test_cannot_care_for_trees_that_are_not_active(): void
-{
-    $user = User::factory()->create();
+    // árboles que ya no pueden recibir cuidados
+    public function test_cannot_care_for_trees_that_are_not_active(): void
+    {
+        $user = User::factory()->create();
 
-    foreach (['DEAD', 'MATURE', 'HARVESTED'] as $status) {
+        foreach (['DEAD', 'MATURE', 'HARVESTED'] as $status) {
+            $tree = Tree::factory()->create([
+                'user_id' => $user->id,
+                'status' => $status,
+            ]);
+
+            $this->actingAs($user, 'sanctum')
+                ->postJson("/api/trees/{$tree->id}/care")
+                ->assertStatus(409);
+        }
+    }
+
+    // la salud no puede superar 100
+    public function test_tree_health_cannot_exceed_100(): void
+    {
+        $user = User::factory()->create();
+
         $tree = Tree::factory()->create([
             'user_id' => $user->id,
-            'status' => $status,
+            'health' => 95,
         ]);
 
         $this->actingAs($user, 'sanctum')
             ->postJson("/api/trees/{$tree->id}/care")
-            ->assertStatus(409);
+            ->assertStatus(200)
+            ->assertJsonPath('tree.health', 100);
+
+        $tree->refresh();
+
+        $this->assertEquals(100, $tree->health);
     }
-}
 
-//la salud no puede superar 100
-public function test_tree_health_cannot_exceed_100(): void
-{
-    $user = User::factory()->create();
+    // límite exacto de los 60 minuto
+    public function test_tree_can_be_cared_for_exactly_at_next_care_time(): void
+    {
+        $user = User::factory()->create();
 
-    $tree = Tree::factory()->create([
-        'user_id' => $user->id,
-        'health' => 95,
-    ]);
+        $tree = Tree::factory()->create([
+            'user_id' => $user->id,
+            'health' => 70,
+            'next_care_at' => now()->addMinutes(60),
+        ]);
 
-    $this->actingAs($user, 'sanctum')
-        ->postJson("/api/trees/{$tree->id}/care")
-        ->assertStatus(200)
-        ->assertJsonPath('tree.health', 100);
+        $this->travel(60)->minutes();
 
-    $tree->refresh();
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/trees/{$tree->id}/care")
+            ->assertStatus(200);
 
-    $this->assertEquals(100, $tree->health);
-}
+        $tree->refresh();
 
-//límite exacto de los 60 minuto
-public function test_tree_can_be_cared_for_exactly_at_next_care_time(): void
-{
-    $user = User::factory()->create();
+        $this->assertEquals(90, $tree->health);
+        $this->assertEquals(1, $tree->progress);
+    }
 
-    $tree = Tree::factory()->create([
-        'user_id' => $user->id,
-        'health' => 70,
-        'next_care_at' => now()->addMinutes(60),
-    ]);
+    // 11. Impedir que el cliente manipule los valores internos del árbol.
+    public function test_client_cannot_manipulate_internal_tree_fields_when_caring(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
-    $this->travel(60)->minutes();
+        $tree = Tree::factory()->create([
+            'user_id' => $user->id,
+            'level' => 2,
+            'progress' => 1,
+            'health' => 70,
+            'status' => 'ACTIVE',
+        ]);
 
-    $this->actingAs($user, 'sanctum')
-        ->postJson("/api/trees/{$tree->id}/care")
-        ->assertStatus(200);
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/trees/{$tree->id}/care", [
+                'user_id' => $otherUser->id,
+                'level' => 99,
+                'progress' => 99,
+                'health' => 1,
+                'status' => 'DEAD',
+            ])
+            ->assertStatus(200)
+            ->assertJsonPath('tree.user_id', $user->id)
+            ->assertJsonPath('tree.level', 2)
+            ->assertJsonPath('tree.progress', 2)
+            ->assertJsonPath('tree.health', 90)
+            ->assertJsonPath('tree.status', 'ACTIVE');
 
-    $tree->refresh();
+        $tree->refresh();
 
-    $this->assertEquals(90, $tree->health);
-    $this->assertEquals(1, $tree->progress);
-}
-
-
-// 11. Impedir que el cliente manipule los valores internos del árbol.
-public function test_client_cannot_manipulate_internal_tree_fields_when_caring(): void
-{
-    $user = User::factory()->create();
-    $otherUser = User::factory()->create();
-
-    $tree = Tree::factory()->create([
-        'user_id' => $user->id,
-        'level' => 2,
-        'progress' => 1,
-        'health' => 70,
-        'status' => 'ACTIVE',
-    ]);
-
-    $this->actingAs($user, 'sanctum')
-        ->postJson("/api/trees/{$tree->id}/care", [
-            'user_id' => $otherUser->id,
-            'level' => 99,
-            'progress' => 99,
-            'health' => 1,
-            'status' => 'DEAD',
-        ])
-        ->assertStatus(200)
-        ->assertJsonPath('tree.user_id', $user->id)
-        ->assertJsonPath('tree.level', 2)
-        ->assertJsonPath('tree.progress', 2)
-        ->assertJsonPath('tree.health', 90)
-        ->assertJsonPath('tree.status', 'ACTIVE');
-
-    $tree->refresh();
-
-    $this->assertEquals($user->id, $tree->user_id);
-    $this->assertEquals(2, $tree->level);
-    $this->assertEquals(2, $tree->progress);
-    $this->assertEquals(90, $tree->health);
-    $this->assertEquals('ACTIVE', $tree->status);
-}
-
+        $this->assertEquals($user->id, $tree->user_id);
+        $this->assertEquals(2, $tree->level);
+        $this->assertEquals(2, $tree->progress);
+        $this->assertEquals(90, $tree->health);
+        $this->assertEquals('ACTIVE', $tree->status);
+    }
 }

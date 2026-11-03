@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\SeedType;
 use App\Models\Tree;
 use App\Models\User;
-use App\Models\SeedType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

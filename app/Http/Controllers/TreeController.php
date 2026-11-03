@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tree;
 use App\Http\Resources\TreeResource;
-use Illuminate\Http\Request;
+use App\Models\Tree;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class TreeController extends Controller

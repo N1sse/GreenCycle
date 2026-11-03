@@ -18,7 +18,7 @@ Route::prefix('auth')->group(function () {
 // ------------------ Tree Management ------------------
 Route::middleware('auth:sanctum')->group(function () {
 
-// ----------- Authenticated User -----------
+    // ----------- Authenticated User -----------
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
