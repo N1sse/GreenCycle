@@ -55,6 +55,10 @@ This sprint focused on the Laravel backend: the data model, Sanctum authenticati
 | 02/11/2026 | `ff358de` | Merge pull request #4 from N1sse/feature/active-effects | N1sse |
 | 02/11/2026 | `1b7bfd2` | updating README with the data/code for Sprint 2 | N1sse |
 | 02/11/2026 | `e276ea2` | Merge remote-tracking branch 'origin/develop' into docs | N1sse |
+| 02/11/2026 | `b83fe56` | updating the commit history for Sprint 2 | N1sse |
+| 02/11/2026 | `a76be8d` | updating imgs | N1sse |
+| 02/11/2026 | `041a728` | changing the name of the pics | N1sse |
+
 
 ### Sprint 2 verification
 
@@ -80,5 +84,5 @@ These results document the local verification performed for the integrated backe
 
 <p align="center">
   <!-- Closing graphic identifier -->
-  <img src="imgs/GreenCycle.jpg" alt="GreenCycle Logo Color" width="300">
+  <img src="imgs/gcycle_color.png" alt="GreenCycle Logo Color" width="300">
 </p>
