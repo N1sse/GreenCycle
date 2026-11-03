@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Inventory;
 use App\Models\Item;
 use App\Models\User;
+use App\Models\Purchase;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -13,6 +14,8 @@ use Tests\TestCase;
 class ReferenceDataTest extends TestCase
 {
     use RefreshDatabase;
+
+    // ------------------ Database Structure ------------------
 
     public function test_domain_tables_can_be_created_from_migrations(): void
     {
@@ -27,12 +30,30 @@ class ReferenceDataTest extends TestCase
         ]));
     }
 
+    public function test_purchases_table_exists(): void
+    {
+        $this->assertTrue(Schema::hasTable('purchases'));
+
+        $this->assertTrue(Schema::hasColumns('purchases', [
+            'user_id',
+            'item_id',
+            'quantity',
+            'unit_price',
+            'total',
+            'created_at',
+        ]));
+    }
+
+    // ------------------ Users ------------------
+
     public function test_new_users_start_with_zero_coins(): void
     {
         $user = User::factory()->create()->refresh();
 
         $this->assertSame(0, $user->coins);
     }
+
+    // ------------------ Items ------------------
 
     public function test_items_accept_an_integer_price_and_a_null_duration(): void
     {
@@ -44,6 +65,8 @@ class ReferenceDataTest extends TestCase
         $this->assertSame(72, $item->price);
         $this->assertNull($item->duration_minutes);
     }
+
+    // ------------------ Inventory ------------------
 
     public function test_inventory_relations_work_in_both_directions(): void
     {
@@ -113,4 +136,43 @@ class ReferenceDataTest extends TestCase
 
         $stock->item->delete();
     }
+
+    // ------------------ Purchases ------------------
+
+    public function test_purchase_relations_work(): void
+    {
+        $purchase = Purchase::factory()->create();
+
+        $this->assertInstanceOf(User::class, $purchase->user);
+        $this->assertInstanceOf(Item::class, $purchase->item);
+
+        $this->assertTrue(
+            $purchase->user->purchases->contains('id', $purchase->id)
+        );
+
+        $this->assertTrue(
+            $purchase->item->purchases->contains('id', $purchase->id)
+        );
+    }
+
+    public function test_purchase_keeps_historical_price(): void
+    {
+        $item = Item::factory()->create(['price' => 50]);
+
+        $purchase = Purchase::factory()->create([
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit_price' => 50,
+            'total' => 100,
+        ]);
+
+        $item->update(['price' => 80]);
+
+        $purchase->refresh();
+
+        $this->assertSame(50, $purchase->unit_price);
+        $this->assertSame(100, $purchase->total);
+    }
+
+
 }
