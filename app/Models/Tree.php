@@ -46,6 +46,7 @@ class Tree extends Model
         return $this->belongsTo(SeedType::class);
     }
 
+    // ------------------ Active Effects ------------------
     public function activeEffects(): HasMany
     {
         return $this->hasMany(ActiveEffect::class);
