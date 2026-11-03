@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // ------------------ Register ------------------
 
+    // ------------------ Register Part ------------------
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -25,6 +25,8 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
         ]);
 
+        $user->refresh();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -34,8 +36,8 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // ------------------ Login ------------------
 
+    // ------------------ Login ------------------
     public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -57,8 +59,8 @@ class AuthController extends Controller
         ], 200);
     }
 
+    
     // ------------------ Logout ------------------
-
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
