@@ -2,7 +2,7 @@
 
 <p align="center">
   <!-- Graphic identifier for docs and GitHub -->
-  <img src="imgs/GreenCycle_white.png" alt="GreenCycle Logo" width="300">
+  <img src="imgs/gcycle_white.png" alt="GreenCycle Logo" width="300">
 </p>
 
 This document records the most relevant commits made during the development of the GreenCycle project. It provides a clear and organized progress log for project tracking, team coordination, and supervisor review.
