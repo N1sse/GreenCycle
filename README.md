@@ -1,6 +1,6 @@
 <p align="center">
   <!-- Graphic identifier for docs and GitHub -->
-  <img src="design/gcycle_white.png" alt="GreenCycle Logo" width="300">
+  <img src="docs/imgs/gcycle_white.png" alt="GreenCycle Logo" width="300">
 </p>
 
 # GreenCycle
@@ -13,28 +13,29 @@ Users can plant and view their own trees while the system progressively incorpor
 
 <p align="center">
   <!-- Graphic identifier used as a visual transition -->
-  <img src="design/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+  <img src="docs/imgs/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
 </p>
 
 ---
 
-## 🌱 Current Scope — Sprint 1
+## 🌱 Current Scope — Sprint 2
 
-During Sprint 1, GreenCycle focuses on establishing the initial functional and architectural structure of the application.
+Sprint 2 focuses on the **Laravel backend** for GreenCycle's virtual greenhouse. The application provides authentication, tree planting and retrieval, and server-side tree care with ownership checks, cooldowns, health recovery, level progression, and maturity.
 
-The Sprint 1 implementation is currently being developed to support:
+The current implementation includes:
 
-- User registration, login, and logout.
-- Access to protected resources.
-- Planting a new tree.
-- Viewing the authenticated user's trees.
-- Viewing the details of a specific owned tree.
-- Initial data modeling, migrations, relationships, and seeders.
-- Authentication and authorization.
-- Initial tree API.
-- Base responsive interface using Fetch.
+- Registration, login, and logout using Laravel Sanctum tokens.
+- Protected API endpoints and access limited to each user's own trees.
+- Planting trees, listing owned trees, viewing tree details, and deleting owned trees.
+- Caring for an active tree using server-controlled rules:
+  - One care action every **60 minutes**.
+  - **+20 health**, capped at 100.
+  - **+1 progress** per valid care; a level increase after **5 cares**, then progress resets to 0.
+  - `MATURE` status at level **10**; `DEAD` and `MATURE` trees cannot be cared for.
+- Eloquent models, migrations, factories, and relationships for users, seed types, trees, items, inventory, purchases, and active effects.
+- Automated feature tests covering tree care, authorization, authentication, and data relationships.
 
-> Time-based care rules, health deterioration, progression, harvesting, Green Coins, inventory, effects, and the virtual shop will be developed in later sprints.
+> **Outside Sprint 2 scope:** Fetch-based frontend integration, Laravel Scheduler, automatic health deterioration, harvesting, purchasing items, applying/expiring item effects, and full virtual shop functionality. Database structures for future features do not mean their business workflows are complete.
 
 ---
 
@@ -42,16 +43,16 @@ The Sprint 1 implementation is currently being developed to support:
 
 | Area | Technologies |
 |---|---|
-| **Backend** | PHP 8.5 · Laravel 13 · Composer 2 |
+| **Backend** | PHP 8.3+ (PHP 8.5 used in CI) · Laravel 13 · Composer 2 |
 | **Authentication** | Laravel Sanctum |
-| **Frontend** | Blade · HTML5 · CSS3 · JavaScript · Fetch API · Vite |
+| **Frontend tooling** | Blade · HTML5 · CSS3 · JavaScript · Vite (Fetch integration is not required in Sprint 2) |
 | **Node Environment** | Node.js 26 · npm |
 | **Database** | PostgreSQL · Neon |
 | **Testing** | PHPUnit · SQLite in memory |
 | **Local Environment** | Laravel Herd |
 | **Version Control** | Git · GitHub |
 | **Code Quality** | Laravel Pint |
-| **Planned CI** | GitHub Actions |
+| **Continuous Integration** | GitHub Actions |
 | **Deployment** | Render |
 
 > Docker and a local PostgreSQL installation are not required for local development.
@@ -60,35 +61,46 @@ The Sprint 1 implementation is currently being developed to support:
 
 ## 📁 Project Structure
 
-- `backend/`: Laravel application, backend source code, migrations, seeders, frontend resources, and automated tests.
+Laravel is located **directly at the repository root**, not in `backend/greencycle/`.
 
-- `design/`: graphic resources and interface prototypes.
-
-- `docs/`: project documentation, API documentation, Sprint evidence, and development records.
-
-- `verification/`: project-level verification resources, manual checks, and testing evidence.
+| Directory / file | Purpose |
+|---|---|
+| `app/Models/` | Eloquent entities and relationships |
+| `app/Http/Controllers/` | Authentication, tree management, and tree care |
+| `app/Policies/` | Authorization rules |
+| `database/migrations/` | Database schema |
+| `database/factories/`, `database/seeders/` | Test data and initial seed types |
+| `routes/api.php` | API endpoint definitions |
+| `tests/Feature/` | Automated feature tests |
+| `docs/` | Sprint documentation, records, and images (`docs/imgs/`) |
+| `resources/`, `public/` | Frontend assets and public files |
+| `.github/workflows/ci.yml` | Automated quality checks |
 
 ---
 
-## API — Sprint 1
+## 🔌 API — Sprint 2
 
-The initial API provides the basic operations required to manage the authenticated user's trees.
+Authentication is handled by **Laravel Sanctum**. Only registration and login are public; all other routes require a valid authenticated session/token.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/api/trees` | List the authenticated user's trees |
-| `GET` | `/api/trees/{tree}` | View the details of an owned tree |
-| `POST` | `/api/trees` | Plant a new tree |
+| `POST` | `/api/auth/register` | Create a user account |
+| `POST` | `/api/auth/login` | Log in and obtain a token |
+| `POST` | `/api/auth/logout` | Revoke the current token |
+| `GET` | `/api/user` | Retrieve the authenticated user |
+| `GET` | `/api/trees` | List owned trees |
+| `POST` | `/api/trees` | Plant a tree using `seed_type_id` |
+| `GET` | `/api/trees/{tree}` | View an owned tree |
+| `DELETE` | `/api/trees/{tree}` | Delete an owned tree |
+| `POST` | `/api/trees/{tree}/care` | Apply the tree care rules |
 
-All tree endpoints require authentication and must prevent users from accessing trees that do not belong to them.
+Tree-related operations check resource ownership. A care attempt on another user's tree returns **403 Forbidden**; an invalid cooldown returns **409 Conflict** with `next_care_at`. Terminal tree statuses cannot be cared for. A valid care returns the updated tree with **200 OK**.
 
-Internal values such as level, health, progress, state, and dates are controlled by the server and must not be defined by the client.
+The client cannot override internal tree properties such as `level`, `progress`, `health`, `status`, or timestamps. These values are managed on the server.
 
-Detailed API documentation and related resources are maintained in:
+**Detailed tree API and business rules:** [`docs/sprint2-trees.md`](docs/sprint2-trees.md).
 
-```text
-docs/
-```
+> **Model note:** The original Sprint 1 dictionary named `ACTIVE_EFFECTS.starts_at` and included an optional `status` field. The Sprint 2 implementation currently uses `started_at` and does not include that `status` column. This is a schema difference to review, not an implemented effect-expiration feature.
 
 ---
 
@@ -113,9 +125,9 @@ The development team remains responsible for the implementation, testing, projec
 
 ## Project Status
 
-**Sprint 1 — In Development**
+**Sprint 2 — Backend implementation integrated in `develop`.**
 
-The current focus is the initial data model, authentication and authorization, tree API, base interface, documentation, database configuration, and reproducible development environment.
+The latest shared verification of `develop` reports **43 passing tests (127 assertions)** and **Laravel Pint passing across 63 files**. This verifies the currently implemented backend behavior; it does not establish that every planned future feature or frontend workflow is complete.
 
 ---
 
@@ -123,7 +135,7 @@ The current focus is the initial data model, authentication and authorization, t
 
 GreenCycle uses Git and GitHub for version control.
 
-The project is organized around the following planned branch workflow:
+The project follows this branch workflow:
 
 | Branch | Purpose |
 |---|---|
@@ -133,9 +145,9 @@ The project is organized around the following planned branch workflow:
 | `docs/*` | Documentation changes |
 | `fix/*` | Corrections and bug fixes |
 
-Branches will be created and used according to the needs of each Sprint.
+Sprint 2 features are integrated in `develop` through Pull Requests.
 
-The final verified version of each Sprint will be merged into `main` and identified with a specific commit, tag, or GitHub release.
+After final review, an approved Sprint version can be merged into `main` and identified by a commit, tag, or GitHub release.
 
 ---
 
@@ -154,16 +166,14 @@ The complete Git history remains available directly in the GitHub repository.
 ---
 
 <p align="center">
-  <img src="design/gc_divider.png" alt="GreenCycle divider" width="800">
+  <img src="docs/imgs/gc_divider.png" alt="GreenCycle divider" width="800">
 </p>
 
 ---
 
 # Getting Started
 
-The following sections explain how to obtain, configure, run, and verify GreenCycle in a local development environment.
-
-> **Important:** Git commands are executed from the root `GreenCycle/` directory. Laravel, Composer, npm, Artisan, and Herd commands must be executed from `backend/greencycle/`, where the `artisan`, `composer.json`, and `package.json` files are located.
+The commands below are executed **from the `GreenCycle/` repository root**, where `artisan`, `composer.json`, `package.json`, and `.env.example` are located. No `backend/greencycle/` subdirectory is used.
 
 ---
 
@@ -171,55 +181,47 @@ The following sections explain how to obtain, configure, run, and verify GreenCy
 
 ## 1. Clone the Repository
 
-Open PowerShell or the integrated Visual Studio Code terminal and run:
+Open a terminal and run:
 
 ```powershell
-git clone REPOSITORY_URL
+git clone https://github.com/N1sse/GreenCycle.git
 Set-Location GreenCycle
 ```
 
-Replace `REPOSITORY_URL` with the actual GreenCycle GitHub repository URL.
+To work with the integrated Sprint 2 version:
+
+```powershell
+git checkout develop
+git pull --ff-only origin develop
+```
 
 ---
 
-## 2. Open the Laravel Project
+## 2. Locate the Laravel Project
 
-From the GreenCycle repository root, navigate to the Laravel application:
-
-```powershell
-Set-Location backend/greencycle
-```
-
-The terminal should now be located inside:
+The repository root already contains the application:
 
 ```text
-GreenCycle/backend/greencycle/
+GreenCycle/
+├── artisan
+├── composer.json
+├── package.json
+├── .env.example
+├── app/
+├── database/
+├── routes/
+└── tests/
 ```
 
-This directory contains the Laravel application files, including:
-
-```text
-artisan
-composer.json
-package.json
-.env.example
-```
-
-> All Laravel, Composer, npm, Artisan, and Herd commands in the following steps must be executed from this directory.
+All subsequent Composer, npm, Artisan, and Herd commands are run here.
 
 ---
 
 ## 3. Configure Laravel Herd
 
-GreenCycle uses Laravel Herd through a project link rather than depending on Herd's default parked directory.
+GreenCycle can be served using Laravel Herd. If your project is already inside Herd’s parked directory, linking it again may not be necessary.
 
-Initialize Herd:
-
-```powershell
-herd init
-```
-
-Use PHP 8.5 for GreenCycle:
+If PHP 8.5 is installed through Herd, you can select it for this project:
 
 ```powershell
 herd isolate 8.5
@@ -237,7 +239,7 @@ GreenCycle will then be available locally at:
 http://greencycle.test
 ```
 
-> The project can remain inside the GreenCycle monorepo because `herd link greencycle` registers the Laravel application directly with Herd.
+> Alternatively, serve the application with `php artisan serve` if Herd is unavailable.
 
 ---
 
@@ -259,7 +261,7 @@ Verify the active version:
 node -v
 ```
 
-The version should correspond to Node.js 26.
+The version should correspond to the version declared in `.nvmrc` (currently 26).
 
 ---
 
@@ -283,11 +285,7 @@ npm.cmd ci
 
 ## 6. Create the Environment File
 
-The environment configuration files are located inside:
-
-```text
-backend/greencycle/
-```
+The `.env.example` file is located at the repository root.
 
 Create the local `.env` file from `.env.example`:
 
@@ -321,7 +319,7 @@ The project separates its database environments using Neon branches:
 | **Production** | Neon `production` branch |
 | **Automated Testing** | SQLite in memory |
 
-Local development must use the Neon `development` branch.
+When connecting to Neon, use the designated `development` database branch rather than production. For an isolated local setup, a separate SQLite database may also be configured.
 
 Open the local `.env` file and configure the PostgreSQL credentials provided by Neon:
 
@@ -367,15 +365,19 @@ If the connection is working correctly, Laravel will display the current migrati
 
 ## 10. Run Migrations and Seeders
 
-Recreate the development database structure and load the initial project data:
+Run pending migrations against the configured development database:
 
 ```powershell
-php artisan migrate:fresh --seed
+php artisan migrate
 ```
 
-This command runs the project migrations and seeders against the configured Neon `development` branch.
+If you need the sample seed types, run:
 
-> `migrate:fresh` removes the existing tables before recreating them. It should only be used against the development environment when rebuilding the database is intended.
+```powershell
+php artisan db:seed
+```
+
+> **Destructive command:** `php artisan migrate:fresh --seed` drops all existing tables and recreates them. Use it **only on a disposable test database** after checking the active connection. Never run it against Neon production or a development database that contains data you need.
 
 ---
 
@@ -383,7 +385,7 @@ This command runs the project migrations and seeders against the configured Neon
 
 ## 11. Start Vite
 
-From `backend/greencycle/`, run:
+From `GreenCycle/`, run:
 
 ```powershell
 npm.cmd run dev
@@ -395,7 +397,7 @@ Keep this terminal open while developing GreenCycle.
 
 ## 12. Open GreenCycle
 
-Because the Laravel application was registered using:
+If the Laravel application was registered using:
 
 ```powershell
 herd link greencycle
@@ -407,9 +409,9 @@ open the following address in the browser:
 http://greencycle.test
 ```
 
-Laravel Herd serves the application automatically.
+Laravel Herd serves the application automatically when configured.
 
-It is not necessary to run:
+Otherwise, you can start Laravel manually with:
 
 ```powershell
 php artisan serve
@@ -419,11 +421,7 @@ php artisan serve
 
 ## Testing and Verification
 
-After installing and configuring GreenCycle, run the following commands from:
-
-```text
-backend/greencycle/
-```
+After installing and configuring GreenCycle, run the following commands from the repository root.
 
 ### Database and Migration Status
 
@@ -455,36 +453,30 @@ To automatically correct formatting issues:
 .\vendor\bin\pint
 ```
 
-### Frontend Dependencies
+### Frontend Build (optional for Sprint 2 review)
 
-Install the frontend dependencies using the versions defined in `package-lock.json`:
+Although Fetch integration is outside this Sprint, frontend assets can be verified using:
 
 ```powershell
 npm.cmd ci
-```
-
-> If PowerShell blocks `npm.ps1` because of the execution policy, use `npm.cmd` instead of `npm`.
-
-### Frontend Build
-
-Verify that the frontend assets compile correctly for production:
-
-```powershell
 npm.cmd run build
 ```
 
+---
+
 ### Project Verification
 
-The local development environment has been verified using:
+The following results were verified on the integrated `develop` branch:
 
-- `composer install`
-- `npm.cmd ci`
-- `npm.cmd run build`
-- `php artisan test`
-- `.\vendor\bin\pint --test`
-- `php artisan migrate:status`
+| Check | Result |
+|---|---|
+| `composer install` | Completed successfully |
+| `php artisan migrate` | No pending migrations in the configured local environment |
+| `php artisan test` | **43 passed, 127 assertions** |
+| `.\vendor\bin\pint --test` | **PASS, 63 files** |
+| `php artisan route:list --path=api` | **9 routes** |
 
-The current automated test suite passes successfully, Laravel Pint reports no formatting errors, the Neon `development` database connection is working correctly, and the frontend production build completes without errors.
+**For fresh migration validation:** the Sprint 2 guide requests a clean migration run. Perform it only against a disposable database. A successful `php artisan migrate` on an existing database does not prove `migrate:fresh` has been tested.
 
 ---
 
@@ -519,13 +511,13 @@ Demo credentials will only be included if they are required and allowed for the 
 
 Personal accounts and personal credentials must never be used as demo credentials.
 
-If demo credentials are required, they will be added to this section before the final Sprint 1 delivery.
+If demo credentials are required, provide only dedicated nonpersonal demonstration accounts.
 
 ---
 
 <p align="center">
   <!-- Graphic identifier used to close the README -->
-  <img src="design/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+  <img src="docs/imgs/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
 </p>
 
 <p align="center">
