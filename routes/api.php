@@ -1,23 +1,35 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\TreeCareController;
+use App\Http\Controllers\TreeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TreeController;
-use App\Http\Controllers\TreeCareController;
 
+// ------------------ Authentication Part ------------------
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->middleware('auth:sanctum');
+});
+
+// ------------------ Tree Management ------------------
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Consultar usuario autenticado.
+// ----------- Authenticated User -----------
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    // Rutas del módulo Tree.
+    // ----------- Trees -----------
     Route::get('/trees', [TreeController::class, 'index']);
     Route::post('/trees', [TreeController::class, 'store']);
     Route::get('/trees/{tree}', [TreeController::class, 'show']);
     Route::delete('/trees/{tree}', [TreeController::class, 'destroy']);
 
-    // Cuidar un árbol.
+    // ----------- Tree Care -----------
+
     Route::post('/trees/{tree}/care', [TreeCareController::class, 'care']);
 });
