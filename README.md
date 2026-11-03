@@ -1,6 +1,6 @@
 <p align="center">
   <!-- Graphic identifier for docs and GitHub -->
-  <img src="docs/imgs/gcycle_white.png" alt="GreenCycle Logo" width="300">
+  <img src="../docs/imgs/gcycle_white.png" alt="GreenCycle Logo" width="300">
 </p>
 
 # GreenCycle
@@ -13,7 +13,7 @@ Users can plant and view their own trees while the system progressively incorpor
 
 <p align="center">
   <!-- Graphic identifier used as a visual transition -->
-  <img src="docs/imgs/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+  <img src="../docs/imgs/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
 </p>
 
 ---
@@ -166,7 +166,7 @@ The complete Git history remains available directly in the GitHub repository.
 ---
 
 <p align="center">
-  <img src="docs/imgs/gc_divider.png" alt="GreenCycle divider" width="800">
+  <img src="../docs/imgs/gc_divider.png" alt="GreenCycle divider" width="800">
 </p>
 
 ---
@@ -517,7 +517,7 @@ If demo credentials are required, provide only dedicated nonpersonal demonstrati
 
 <p align="center">
   <!-- Graphic identifier used to close the README -->
-  <img src="docs/imgs/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
+  <img src="../docs/imgs/gcycle_color.png" alt="GreenCycle Color Logo" width="300">
 </p>
 
 <p align="center">
