@@ -32,10 +32,21 @@ class User extends Authenticatable
         ];
     }
 
+    // ------------------ Trees ------------------
+
+    public function trees(): HasMany
+    {
+        return $this->hasMany(Tree::class);
+    }
+
+    // ------------------ Inventory ------------------
+
     public function inventory(): HasMany
     {
         return $this->hasMany(Inventory::class);
     }
+
+    // ------------------ Purchases ------------------
 
     public function purchases(): HasMany
     {
