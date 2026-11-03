@@ -29,7 +29,7 @@ class AuthTest extends TestCase
             ]);
     }
 
-    //---registration not valid for dups emails
+    // ---registration not valid for dups emails
     public function test_registration_rejects_duplicate_emails(): void
     {
         $user = User::factory()->create();
@@ -45,7 +45,7 @@ class AuthTest extends TestCase
             ->assertJsonValidationErrors(['email']);
     }
 
-     //---registration valid
+    // ---registration valid
     public function test_user_can_register_successfully(): void
     {
         $response = $this->postJson('/api/auth/register', [
@@ -79,10 +79,9 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 1);
     }
 
-
     // ------------------ Login ------------------
 
-    //--rejects the login for the password
+    // --rejects the login for the password
     public function test_login_rejects_invalid_credentials(): void
     {
         $user = User::factory()->create([
@@ -100,7 +99,7 @@ class AuthTest extends TestCase
             ]);
     }
 
-    //--successful login
+    // --successful login
     public function test_user_can_login_successfully(): void
     {
         $user = User::factory()->create([
@@ -129,7 +128,7 @@ class AuthTest extends TestCase
             'name' => 'auth_token',
         ]);
     }
-    
+
     // ------------------ Logout ------------------
     public function test_user_can_logout_successfully(): void
     {
@@ -153,5 +152,4 @@ class AuthTest extends TestCase
             ->postJson('/api/auth/logout')
             ->assertUnauthorized();
     }
-
 }

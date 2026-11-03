@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
     // ------------------ Register Part ------------------
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -35,7 +34,6 @@ class AuthController extends Controller
             'token' => $token,
         ], 201);
     }
-
 
     // ------------------ Login ------------------
     public function login(LoginRequest $request): JsonResponse
@@ -59,7 +57,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    
     // ------------------ Logout ------------------
     public function logout(Request $request): JsonResponse
     {

@@ -12,7 +12,7 @@ class LoginRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; //change it to true so in the future we are not going to have an error.
+        return true; // change it to true so in the future we are not going to have an error.
     }
 
     /**

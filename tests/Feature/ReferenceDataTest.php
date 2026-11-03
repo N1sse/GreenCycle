@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Inventory;
 use App\Models\Item;
-use App\Models\User;
 use App\Models\Purchase;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -173,6 +173,4 @@ class ReferenceDataTest extends TestCase
         $this->assertSame(50, $purchase->unit_price);
         $this->assertSame(100, $purchase->total);
     }
-
-
 }
