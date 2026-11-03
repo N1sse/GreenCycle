@@ -20,18 +20,20 @@ class Inventory extends Model
         'quantity',
     ];
 
-    protected function casts(): array{
+    protected function casts(): array
+    {
         return [
             'quantity' => 'integer',
         ];
     }
 
-    public function user(): BelongsTo{
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function item(): BelongsTo{
+    public function item(): BelongsTo
+    {
         return $this->belongsTo(Item::class);
     }
 }
-
